@@ -4,7 +4,7 @@ import os
 from tqdm import tqdm
 from get_imdb_data import download_if_needed
 
-DTYPE_YEAR = "<http://www.w3.org/2001/XMLSchema#gYear>"
+# DTYPE_YEAR = "<http://www.w3.org/2001/XMLSchema#gYear>"
 DTYPE_DOUBLE = "<http://www.w3.org/2001/XMLSchema#double>"
 DTYPE_NON_NEG_INT = "<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"
 DTYPE_US_DOLLER = "<http://dbpedia.org/datatype/usDollar>"
@@ -19,7 +19,7 @@ property_dict = {
     "episodeNumber": "http://dbpedia.org/ontology/episodeNumber",
     "seasonNumber": "http://dbpedia.org/ontology/seasonNumber",
     "endYear": "https://www.scads.de/movieBenchmark/ontology/endYear",
-    "genre_list": "https://www.scads.de/movieBenchmark/ontology/genre_list",
+    "genres": "https://www.scads.de/movieBenchmark/ontology/genre_list",
     "isAdult": "https://www.scads.de/movieBenchmark/ontology/isAdult",
     "primaryName": "https://www.scads.de/movieBenchmark/ontology/name",
     "originalTitle": "https://www.scads.de/movieBenchmark/ontology/originalTitle",
@@ -44,13 +44,36 @@ def get_allowed(path):
         return set([line.strip() for line in in_file])
 
 
-def _should_write(s, o, allowed):
-    if s.startswith("nm") or s.startswith("tt"):
+def get_excluded(path):
+    with open(path, "r") as in_file:
+        return set(
+            [
+                (line.strip().split("\t")[0], line.strip().split("\t")[1])
+                for line in in_file
+            ]
+        )
+
+
+def _should_write(s, o, allowed, exclude):
+    if (s.startswith("nm") or s.startswith("tt")) and (
+        o.startswith("nm") or o.startswith("tt")
+    ):
+        if (s, o) in exclude:
+            return False
+        if s in allowed and o in allowed:
+            return True
+        else:
+            return False
+    elif s.startswith("nm") or s.startswith("tt"):
         if s in allowed:
             return True
-    if o.startswith("nm") or o.startswith("tt"):
+        else:
+            return False
+    elif o.startswith("nm") or o.startswith("tt"):
         if o in allowed:
             return True
+        else:
+            return False
     return False
 
 
@@ -60,7 +83,19 @@ def _add_dtype(obj, dtype):
     return '"' + obj + '"^^' + dtype
 
 
-def write_trips(s, p, o, multiple_possible, allowed, dtype=None):
+def _sanity_check(input):
+    if input is None or input == "":
+        return False
+    return True
+
+
+def _normalize_year(year):
+    return year + "-01-01"
+
+
+def create_trips(s, p, o, multiple_possible, allowed, exclude, dtype=None):
+    if not (_sanity_check(s) and _sanity_check(p) and _sanity_check(o)):
+        return []
     if p == "titleType":
         if o in {"movie", "short", "tvMovie", "tvShort"} or "video" in o:
             o = FILM_TYPE
@@ -78,20 +113,24 @@ def write_trips(s, p, o, multiple_possible, allowed, dtype=None):
 
     trips = []
     if not (s == "\\N" or o == "\\N"):
+        if "Year" in p:
+            o = _normalize_year(o)
         if multiple_possible:
             if o.startswith("["):
                 o_list = ast.literal_eval(o)
+            # else:
+            #     o_list = o.split(",")
             else:
-                o_list = o.split(",")
+                o_list = [o]
             for obj in o_list:
-                if _should_write(s, obj, allowed):
+                if _should_write(s, obj, allowed, exclude):
                     if s.startswith("nm") or s.startswith("tt"):
                         s = BENCHMARK_RESOURCE_PREFIX + s
                     if obj.startswith("nm") or obj.startswith("tt"):
                         obj = BENCHMARK_RESOURCE_PREFIX + obj
                     trips.append([s, p, _add_dtype(obj, dtype)])
         else:
-            if _should_write(s, o, allowed):
+            if _should_write(s, o, allowed, exclude):
                 if s.startswith("nm") or s.startswith("tt"):
                     s = BENCHMARK_RESOURCE_PREFIX + s
                 if o.startswith("nm") or o.startswith("tt"):
@@ -100,7 +139,7 @@ def write_trips(s, p, o, multiple_possible, allowed, dtype=None):
     return trips
 
 
-def handle_name_basics(path, allowed):
+def handle_name_basics(path, allowed, exclude):
     attr_trips = []
     rel_trips = []
     with open(path, "r") as in_file:
@@ -109,23 +148,41 @@ def handle_name_basics(path, allowed):
                 row = line.strip().split("\t")
                 if row[0] in allowed:
                     attr_trips.extend(
-                        write_trips(row[0], "primaryName", row[1], False, allowed)
-                    )
-                    attr_trips.extend(
-                        write_trips(
-                            row[0], "birthYear", row[2], False, allowed, DTYPE_YEAR
+                        create_trips(
+                            row[0], "primaryName", row[1], False, allowed, exclude
                         )
                     )
                     attr_trips.extend(
-                        write_trips(
-                            row[0], "deathYear", row[3], False, allowed, DTYPE_YEAR
+                        create_trips(
+                            row[0],
+                            "birthYear",
+                            row[2],
+                            False,
+                            allowed,
+                            exclude,
+                            DTYPE_DATE,
                         )
                     )
                     attr_trips.extend(
-                        write_trips(row[0], "primaryProfession", row[4], True, allowed)
+                        create_trips(
+                            row[0],
+                            "deathYear",
+                            row[3],
+                            False,
+                            allowed,
+                            exclude,
+                            DTYPE_DATE,
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            row[0], "primaryProfession", row[4], True, allowed, exclude
+                        )
                     )
                     rel_trips.extend(
-                        write_trips(row[0], "knownForTitles", row[5], True, allowed)
+                        create_trips(
+                            row[0], "knownForTitles", row[5], True, allowed, exclude
+                        )
                     )
                     rel_trips.append(
                         [
@@ -137,45 +194,8 @@ def handle_name_basics(path, allowed):
     return attr_trips, rel_trips
 
 
-def handle_title_basics(path, allowed):
+def handle_title_basics(path, allowed, exclude):
     attr_trips = []
-    with open(path, "r") as in_file:
-        for line in in_file:
-            if not line.startswith("tconst\t"):
-                row = line.strip().split("\t")
-                if row[0] in allowed:
-                    attr_trips.extend(
-                        write_trips(row[0], "titleType", row[1], False, allowed)
-                    )
-                    attr_trips.extend(
-                        write_trips(row[0], "primaryTitle", row[2], False, allowed)
-                    )
-                    attr_trips.extend(
-                        write_trips(row[0], "originalTitle", row[3], False, allowed)
-                    )
-                    attr_trips.extend(
-                        write_trips(row[0], "isAdult", row[4], False, allowed)
-                    )
-                    attr_trips.extend(
-                        write_trips(
-                            row[0], "startYear", row[5], False, allowed, DTYPE_YEAR
-                        )
-                    )
-                    attr_trips.extend(
-                        write_trips(
-                            row[0], "endYear", row[6], False, allowed, DTYPE_YEAR
-                        )
-                    )
-                    attr_trips.extend(
-                        write_trips(row[0], "runtimeMinutes", row[7], False, allowed,)
-                    )
-                    # attr_trips.extend(
-                    #     write_trips(row[0], "genres", row[7], False, allowed)
-                    # )
-    return attr_trips, []
-
-
-def handle_title_crew(path, allowed):
     rel_trips = []
     with open(path, "r") as in_file:
         for line in in_file:
@@ -183,15 +203,82 @@ def handle_title_crew(path, allowed):
                 row = line.strip().split("\t")
                 if row[0] in allowed:
                     rel_trips.extend(
-                        write_trips(row[0], "participatedIn", row[1], True, allowed)
+                        create_trips(
+                            row[0], "titleType", row[1], False, allowed, exclude
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            row[0], "primaryTitle", row[2], False, allowed, exclude
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            row[0], "originalTitle", row[3], False, allowed, exclude
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(row[0], "isAdult", row[4], False, allowed, exclude)
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            row[0],
+                            "startYear",
+                            row[5],
+                            False,
+                            allowed,
+                            exclude,
+                            DTYPE_DATE,
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            row[0],
+                            "endYear",
+                            row[6],
+                            False,
+                            allowed,
+                            exclude,
+                            DTYPE_DATE,
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            row[0],
+                            "runtimeMinutes",
+                            row[7],
+                            False,
+                            allowed,
+                            exclude,
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(row[0], "genres", row[8], False, allowed, exclude)
+                    )
+    return attr_trips, rel_trips
+
+
+def handle_title_crew(path, allowed, exclude):
+    rel_trips = []
+    with open(path, "r") as in_file:
+        for line in in_file:
+            if not line.startswith("tconst\t"):
+                row = line.strip().split("\t")
+                if row[0] in allowed:
+                    rel_trips.extend(
+                        create_trips(
+                            row[0], "participatedIn", row[1], True, allowed, exclude
+                        )
                     )
                     rel_trips.extend(
-                        write_trips(row[0], "participatedIn", row[2], True, allowed)
+                        create_trips(
+                            row[0], "participatedIn", row[2], True, allowed, exclude
+                        )
                     )
     return [], rel_trips
 
 
-def handle_title_episode(path, allowed):
+def handle_title_episode(path, allowed, exclude):
     attr_trips = []
     rel_trips = []
     with open(path, "r") as in_file:
@@ -200,10 +287,17 @@ def handle_title_episode(path, allowed):
                 row = line.strip().split("\t")
                 if row[1] in allowed:
                     rel_trips.extend(
-                        write_trips(row[0], "episodeOf", row[1], False, allowed)
+                        create_trips(
+                            row[0], "episodeOf", row[1], False, allowed, exclude
+                        )
+                    )
+                    rel_trips.extend(
+                        create_trips(
+                            row[0], "titleType", "tvEpisode", False, allowed, exclude
+                        )
                     )
                     attr_trips.extend(
-                        write_trips(
+                        create_trips(
                             row[0],
                             "seasonNumber",
                             row[2],
@@ -213,7 +307,7 @@ def handle_title_episode(path, allowed):
                         )
                     )
                     attr_trips.extend(
-                        write_trips(
+                        create_trips(
                             row[0],
                             "episodeNumber",
                             row[3],
@@ -225,7 +319,7 @@ def handle_title_episode(path, allowed):
     return attr_trips, rel_trips
 
 
-def handle_title_principals(path, allowed):
+def handle_title_principals(path, allowed, exclude):
     attr_trips = []
     rel_trips = []
     with open(path, "r") as in_file:
@@ -234,7 +328,9 @@ def handle_title_principals(path, allowed):
                 row = line.strip().split("\t")
                 if row[0] in allowed:
                     rel_trips.extend(
-                        write_trips(row[2], "participatedIn", row[0], False, allowed)
+                        create_trips(
+                            row[2], "participatedIn", row[0], False, allowed, exclude
+                        )
                     )
                     # attr_trips.extend(
                     #     write_trips(row[2], "ordering", row[1], False, allowed)
@@ -251,7 +347,15 @@ def handle_title_principals(path, allowed):
     return attr_trips, rel_trips
 
 
-def parse_files_write_trips(imdb_dir, allowed, out_folder):
+def _dedup(trips):
+    d = []
+    for t in trips:
+        if t not in d:
+            d.append(t)
+    return d
+
+
+def parse_files(imdb_dir, allowed, exclude):
     file_handler_dict = {
         "name.basics.tsv": handle_name_basics,
         "title.basics.tsv": handle_title_basics,
@@ -259,15 +363,13 @@ def parse_files_write_trips(imdb_dir, allowed, out_folder):
         "title.episode.tsv": handle_title_episode,
         "title.principals.tsv": handle_title_principals,
     }
-    if not os.path.exists(out_folder):
-        os.makedirs(out_folder)
     # collect triples
     rel_trips = []
     attr_trips = []
     for filename, handle_fun in tqdm(
         file_handler_dict.items(), desc="Creating triples"
     ):
-        tmp_a, tmp_r = handle_fun(os.path.join(imdb_dir, filename), allowed)
+        tmp_a, tmp_r = handle_fun(os.path.join(imdb_dir, filename), allowed, exclude)
         attr_trips.extend(tmp_a)
         rel_trips.extend(tmp_r)
 
@@ -277,6 +379,12 @@ def parse_files_write_trips(imdb_dir, allowed, out_folder):
         rel_ids.add(r[0])
         rel_ids.add(r[2])
     cleaned_attr = [a for a in attr_trips if a[0] in rel_ids]
+    return _dedup(cleaned_attr), _dedup(rel_trips)
+
+
+def write_files(cleaned_attr, rel_trips, out_folder):
+    if not os.path.exists(out_folder):
+        os.makedirs(out_folder)
     with open(os.path.join(out_folder, "attr_triples_1"), "w") as out_writer_attr:
         for t in cleaned_attr:
             out_writer_attr.write("\t".join(t) + "\n")
@@ -285,17 +393,23 @@ def parse_files_write_trips(imdb_dir, allowed, out_folder):
             out_writer_rel.write("\t".join(t) + "\n")
 
 
-if __name__ == "__main__":
+def create_graph_data():
     download_if_needed()
     imdb_path = os.path.join("data", "imdb")
-    allowed_ids = [
-        os.path.join("data", "imdb", "allowedIMDBTMDB"),
-        os.path.join("data", "imdb", "allowedIMDBTVDB"),
-    ]
-    output_folders = [
-        os.path.join("data", "imdb-tmdb"),
-        os.path.join("data", "imdb-tvdb"),
-    ]
-    for ids_path, output in zip(allowed_ids, output_folders):
-        allowed = get_allowed(ids_path)
-        parse_files_write_trips(imdb_path, allowed, output)
+    # allowed_ids = [
+    #     os.path.join("data", "imdb", "allowedIMDBTMDB"),
+    #     os.path.join("data", "imdb", "allowedIMDBTVDB"),
+    # ]
+    # output_folders = [
+    #     os.path.join("data", "imdb-tmdb"),
+    #     os.path.join("data", "imdb-tvdb"),
+    # ]
+    allowed = get_allowed(os.path.join("data", "imdb", "allowed"))
+    exclude = get_excluded(os.path.join("data", "imdb", "exclude"))
+    cleaned_attr, rel_trips = parse_files(imdb_path, allowed, exclude)
+    write_files(cleaned_attr, rel_trips, os.path.join("data", "imdb-tmdb"))
+    write_files(cleaned_attr, rel_trips, os.path.join("data", "imdb-tvdb"))
+
+
+if __name__ == "__main__":
+    create_graph_data()

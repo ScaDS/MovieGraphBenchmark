@@ -1,7 +1,6 @@
 import sys
 import ast
 import os
-from tqdm import tqdm
 from get_imdb_data import download_if_needed
 
 # DTYPE_YEAR = "<http://www.w3.org/2001/XMLSchema#gYear>"
@@ -366,12 +365,25 @@ def parse_files(imdb_dir, allowed, exclude):
     # collect triples
     rel_trips = []
     attr_trips = []
-    for filename, handle_fun in tqdm(
-        file_handler_dict.items(), desc="Creating triples"
-    ):
-        tmp_a, tmp_r = handle_fun(os.path.join(imdb_dir, filename), allowed, exclude)
-        attr_trips.extend(tmp_a)
-        rel_trips.extend(tmp_r)
+    # use tqdm if available
+    try:
+        from tqdm import tqdm
+
+        for filename, handle_fun in tqdm(
+            file_handler_dict.items(), desc="Creating triples"
+        ):
+            tmp_a, tmp_r = handle_fun(
+                os.path.join(imdb_dir, filename), allowed, exclude
+            )
+            attr_trips.extend(tmp_a)
+            rel_trips.extend(tmp_r)
+    except ImportError:
+        for filename, handle_fun in file_handler_dict.items():
+            tmp_a, tmp_r = handle_fun(
+                os.path.join(imdb_dir, filename), allowed, exclude
+            )
+            attr_trips.extend(tmp_a)
+            rel_trips.extend(tmp_r)
 
     # ignore attr trips that do not show up in rel trips
     rel_ids = set()

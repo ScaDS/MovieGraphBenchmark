@@ -1,18 +1,18 @@
+import gzip
+import os
+import shutil
+import sys
+
 import requests
 from tqdm import tqdm
-import os
-import sys
-import gzip
-import shutil
 
 uris = {
     "https://datasets.imdbws.com/name.basics.tsv.gz": "name.basics.tsv",
     "https://datasets.imdbws.com/title.basics.tsv.gz": "title.basics.tsv",
-    "https://datasets.imdbws.com/title.crew.tsv.gz": "title.crew.tsv",
+    # "https://datasets.imdbws.com/title.crew.tsv.gz": "title.crew.tsv",
     "https://datasets.imdbws.com/title.episode.tsv.gz": "title.episode.tsv",
     "https://datasets.imdbws.com/title.principals.tsv.gz": "title.principals.tsv",
 }
-IMDB_PATH = os.path.join("data", "imdb")
 
 
 def download_file(url, dl_path, chunk_size=1024):
@@ -39,13 +39,13 @@ def unzip(filepath):
             shutil.copyfileobj(f_in, f_out)
 
 
-def download_if_needed():
-    os.makedirs(IMDB_PATH, exist_ok=True)
+def download_if_needed(imdb_path):
+    os.makedirs(imdb_path, exist_ok=True)
     for u, p in uris.items():
-        filepath = os.path.join(IMDB_PATH, p)
+        filepath = os.path.join(imdb_path, p)
         if not os.path.isfile(filepath):
             print(f"Did not find {filepath}, therefore downloading")
-            download_file(u, IMDB_PATH)
+            download_file(u, imdb_path)
             print("Unpacking gz archive")
             unzip(filepath)
             os.remove(filepath + ".gz")

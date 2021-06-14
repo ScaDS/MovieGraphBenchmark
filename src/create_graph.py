@@ -406,11 +406,11 @@ def write_files(cleaned_attr, rel_trips, out_folder):
 
 
 def create_graph_data():
-    download_if_needed()
     file_path = os.path.abspath(__file__)
     repo_path = os.path.split(os.path.split(file_path)[0])[0]
     data_path = os.path.join(repo_path, "data")
     imdb_path = os.path.join(data_path, "imdb")
+    download_if_needed(imdb_path)
     allowed = get_allowed(os.path.join(data_path, "imdb", "allowed"))
     exclude = get_excluded(os.path.join(data_path, "imdb", "exclude"))
     cleaned_attr, rel_trips = parse_files(imdb_path, allowed, exclude)

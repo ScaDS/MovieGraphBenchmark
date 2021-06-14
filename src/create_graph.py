@@ -1,6 +1,6 @@
-import sys
 import ast
 import os
+
 from get_imdb_data import download_if_needed
 
 # DTYPE_YEAR = "<http://www.w3.org/2001/XMLSchema#gYear>"
@@ -407,20 +407,15 @@ def write_files(cleaned_attr, rel_trips, out_folder):
 
 def create_graph_data():
     download_if_needed()
-    imdb_path = os.path.join("data", "imdb")
-    # allowed_ids = [
-    #     os.path.join("data", "imdb", "allowedIMDBTMDB"),
-    #     os.path.join("data", "imdb", "allowedIMDBTVDB"),
-    # ]
-    # output_folders = [
-    #     os.path.join("data", "imdb-tmdb"),
-    #     os.path.join("data", "imdb-tvdb"),
-    # ]
-    allowed = get_allowed(os.path.join("data", "imdb", "allowed"))
-    exclude = get_excluded(os.path.join("data", "imdb", "exclude"))
+    file_path = os.path.abspath(__file__)
+    repo_path = os.path.split(os.path.split(file_path)[0])[0]
+    data_path = os.path.join(repo_path, "data")
+    imdb_path = os.path.join(data_path, "imdb")
+    allowed = get_allowed(os.path.join(data_path, "imdb", "allowed"))
+    exclude = get_excluded(os.path.join(data_path, "imdb", "exclude"))
     cleaned_attr, rel_trips = parse_files(imdb_path, allowed, exclude)
-    write_files(cleaned_attr, rel_trips, os.path.join("data", "imdb-tmdb"))
-    write_files(cleaned_attr, rel_trips, os.path.join("data", "imdb-tvdb"))
+    write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tmdb"))
+    write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tvdb"))
 
 
 if __name__ == "__main__":

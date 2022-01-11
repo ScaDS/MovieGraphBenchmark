@@ -38,8 +38,7 @@ def download_file(url, dl_path, chunk_size=1024):
             os.path.join(dl_path, filename), "wb"
         ) as f:
             for chunk in r.iter_content(chunk_size=chunk_size):
-                datasize = f.write(chunk)
-                progress.update(datasize)
+                f.write(chunk)
 
 
 def unzip(filepath):

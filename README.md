@@ -32,3 +32,25 @@ python3 src/creath_graph.py
 There are 3 entity resolution tasks in this repository: imdb-tmdb, imdb-tvdb, tmdb-tvdb, all contained in the `data` folder. 
 The data structure follows the structure used in [OpenEA](https://github.com/nju-websoft/OpenEA).
 Each folder contains the information of the knowledge graphs (`attr_triples_*`,`rel_triples_*`) and the gold standard of entity links (`ent_links`). The triples are labeled with `1` and `2` where e.g. for imdb-tmdb `1` refers to imdb and `2` to tmdb. The folder 721_5fold contains pre-split entity link folds with 70-20-10 ratio for testing, training, validation.
+
+# Citing
+This dataset was first presented in this paper:
+```
+@inproceedings{EAGERKGCW2021,
+  author    = {Daniel Obraczka and
+               Jonathan Schuchart and
+               Erhard Rahm},
+  editor    = {David Chaves-Fraga and
+               Anastasia Dimou and
+               Pieter Heyvaert and
+               Freddy Priyatna and
+               Juan Sequeda},
+  title     = {Embedding-Assisted Entity Resolution for Knowledge Graphs},
+  booktitle = {Proceedings of the 2nd International Workshop on Knowledge Graph Construction co-located with 18th Extended Semantic Web Conference (ESWC 2021), Online, June 5, 2021},
+  series    = {{CEUR} Workshop Proceedings},
+  volume    = {2873},
+  publisher = {CEUR-WS.org},
+  year      = {2021},
+  url       = {http://ceur-ws.org/Vol-2873/paper8.pdf},
+}
+```

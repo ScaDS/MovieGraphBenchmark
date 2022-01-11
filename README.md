@@ -3,11 +3,30 @@ Due to licensing we are not allowed to distribute the IMDB datasets (more info o
 What we can do is let you build the IMDB side of the entity resolution datasets yourself. Please be aware, that the mentioned license applies to the IMDB data you produce.
 
 # Dependencies
-The only dependency is `requests` 
+The only dependency is `requests`, although with `tqdm` you will have nice progress bars (this is optional).
 
-# Creating IMDB data
-The TMDB and TVDB datasets are already provided and where created from the public APIs of [TheMovieDB](https://www.themoviedb.org/documentation/api) and [TVDB](https://www.thetvdb.com/api-information).
-Running `python src/create_graph.py` downloads the IMDB data and creates the missing datasets.
+# Getting the data 
+The TMDB and TVDB datasets are already provided in this repo and where created from the public APIs of [TheMovieDB](https://www.themoviedb.org/documentation/api) and [TVDB](https://www.thetvdb.com/api-information). What you have to do is create the IMDB data.
+
+If you love one-liners and trust random people on the internet (that promise to be nice) you can simply run:
+```bash
+curl -sSL https://raw.githubusercontent.com/ScaDS/MovieGraphBenchmark/master/src/main.py | python3 -
+```
+
+This will download this repo, execute `python src/create_graph.py`, which downloads the IMDB data and creates the missing datasets. Furthermore it cleans up and only leaves a `ScaDSMovieGraphBenchmark` in your current directory with the datasets.
+
+You can also specify a specific directory where data should go:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/ScaDS/MovieGraphBenchmark/master/src/main.py | python3 - mypath/benchmarkfolder
+```
+
+If you don't like piping scripts from the internet you can do the steps by yourself:
+```
+git clone https://github.com/ScaDS/MovieGraphBenchmark.git
+cd MovieGraphBenchmark
+python3 src/creath_graph.py
+```
 
 # Dataset structure
 There are 3 entity resolution tasks in this repository: imdb-tmdb, imdb-tvdb, tmdb-tvdb, all contained in the `data` folder. 

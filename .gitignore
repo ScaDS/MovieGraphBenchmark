@@ -4,7 +4,8 @@ data/imdb-tmdb/attr_triples_1
 data/imdb-tmdb/rel_triples_1
 data/imdb-tvdb/attr_triples_1
 data/imdb-tvdb/rel_triples_1
-tests/*
+tests/correct_graphs/*
+tests/test_compare.py
 
 # Swap
 [._]*.s[a-v][a-z]

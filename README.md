@@ -21,7 +21,7 @@ You can also specify a specific directory where data should go:
 curl -sSL https://raw.githubusercontent.com/ScaDS/MovieGraphBenchmark/master/src/main.py | python3 - mypath/benchmarkfolder
 ```
 
-If you don't like piping scripts from the internet you can do the steps by yourself:
+If you don't like piping scripts from the internet (or you use windows) you can do the steps by yourself:
 ```
 git clone https://github.com/ScaDS/MovieGraphBenchmark.git
 cd MovieGraphBenchmark

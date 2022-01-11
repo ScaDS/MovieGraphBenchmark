@@ -3,7 +3,6 @@ import os
 
 from get_imdb_data import download_if_needed
 
-# DTYPE_YEAR = "<http://www.w3.org/2001/XMLSchema#gYear>"
 DTYPE_DOUBLE = "<http://www.w3.org/2001/XMLSchema#double>"
 DTYPE_NON_NEG_INT = "<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"
 DTYPE_US_DOLLER = "<http://dbpedia.org/datatype/usDollar>"
@@ -40,17 +39,15 @@ PERSON_TYPE = "http://xmlns.com/foaf/0.1/Person"
 
 def get_allowed(path):
     with open(path, "r") as in_file:
-        return set([line.strip() for line in in_file])
+        return {line.strip() for line in in_file}
 
 
 def get_excluded(path):
     with open(path, "r") as in_file:
-        return set(
-            [
-                (line.strip().split("\t")[0], line.strip().split("\t")[1])
-                for line in in_file
-            ]
-        )
+        return {
+            (line.strip().split("\t")[0], line.strip().split("\t")[1])
+            for line in in_file
+        }
 
 
 def _should_write(s, o, allowed, exclude):
@@ -117,8 +114,6 @@ def create_trips(s, p, o, multiple_possible, allowed, exclude, dtype=None):
         if multiple_possible:
             if o.startswith("["):
                 o_list = ast.literal_eval(o)
-            # else:
-            #     o_list = o.split(",")
             else:
                 o_list = [o]
             for obj in o_list:
@@ -331,18 +326,6 @@ def handle_title_principals(path, allowed, exclude):
                             row[2], "participatedIn", row[0], False, allowed, exclude
                         )
                     )
-                    # attr_trips.extend(
-                    #     write_trips(row[2], "ordering", row[1], False, allowed)
-                    # )
-                    # attr_trips.extend(
-                    #     write_trips(row[2], "category", row[3], False, allowed)
-                    # )
-                    # attr_trips.extend(
-                    #     write_trips(row[2], "job", row[4], False, allowed)
-                    # )
-                    # attr_trips.extend(
-                    #     write_trips(row[2], "characters", row[5], True, allowed)
-                    # )
     return attr_trips, rel_trips
 
 

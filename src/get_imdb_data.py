@@ -4,7 +4,6 @@ import shutil
 import sys
 
 import requests
-from tqdm import tqdm
 
 uris = {
     "https://datasets.imdbws.com/name.basics.tsv.gz": "name.basics.tsv",
@@ -18,19 +17,29 @@ uris = {
 def download_file(url, dl_path, chunk_size=1024):
     filename = os.path.basename(url)
     filesize = int(requests.head(url).headers["Content-Length"])
-    with requests.get(url, stream=True) as r, open(
-        os.path.join(dl_path, filename), "wb"
-    ) as f, tqdm(
-        unit="B",
-        unit_scale=True,
-        unit_divisor=1024,
-        total=filesize,
-        file=sys.stdout,
-        desc=filename,
-    ) as progress:
-        for chunk in r.iter_content(chunk_size=chunk_size):
-            datasize = f.write(chunk)
-            progress.update(datasize)
+    try:
+        from tqdm import tqdm  # noqa: autoimport
+
+        with requests.get(url, stream=True) as r, open(
+            os.path.join(dl_path, filename), "wb"
+        ) as f, tqdm(
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=filesize,
+            file=sys.stdout,
+            desc=filename,
+        ) as progress:
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                datasize = f.write(chunk)
+                progress.update(datasize)
+    except ImportError:
+        with requests.get(url, stream=True) as r, open(
+            os.path.join(dl_path, filename), "wb"
+        ) as f:
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                datasize = f.write(chunk)
+                progress.update(datasize)
 
 
 def unzip(filepath):

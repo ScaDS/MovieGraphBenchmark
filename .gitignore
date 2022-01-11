@@ -1,3 +1,4 @@
+.envrc
 data/imdb/*.tsv
 data/imdb/*.tsv.gz
 data/imdb-tmdb/attr_triples_1

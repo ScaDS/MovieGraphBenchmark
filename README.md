@@ -25,7 +25,7 @@ If you don't like piping scripts from the internet (or you use windows) you can 
 ```
 git clone https://github.com/ScaDS/MovieGraphBenchmark.git
 cd MovieGraphBenchmark
-python3 src/creath_graph.py
+python3 src/create_graph.py
 ```
 
 # Dataset structure

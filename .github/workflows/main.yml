@@ -31,11 +31,15 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+      shell: bash
         python -m pip install --upgrade pip
         python -m pip install nox
     - name: Set PYTHONPATH
       run: |
-        echo "PYTHONPATH=$PYTHONPATH:src" >> $GITHUB_ENV
+      shell: bash
+        echo "PYTHONPATH=src" >> $GITHUB_ENV
+        echo "${{ env.PYTHONPATH }}"
     - name: Test
       run:
+      shell: bash
         nox

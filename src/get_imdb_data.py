@@ -14,7 +14,7 @@ uris = {
 }
 
 
-def download_file(url, dl_path, chunk_size=1024):
+def download_file(url: str, dl_path: str, chunk_size: int = 1024):
     filename = os.path.basename(url)
     filesize = int(requests.head(url).headers["Content-Length"])
     try:
@@ -41,13 +41,13 @@ def download_file(url, dl_path, chunk_size=1024):
                 f.write(chunk)
 
 
-def unzip(filepath):
+def unzip(filepath: str):
     with gzip.open(filepath + ".gz", "rb") as f_in:
         with open(filepath, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)
 
 
-def download_if_needed(imdb_path):
+def download_if_needed(imdb_path: str):
     os.makedirs(imdb_path, exist_ok=True)
     for u, p in uris.items():
         filepath = os.path.join(imdb_path, p)

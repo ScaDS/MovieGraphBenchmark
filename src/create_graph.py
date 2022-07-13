@@ -1,5 +1,6 @@
 import ast
 import os
+from typing import List, Set, Tuple
 
 from get_imdb_data import download_if_needed
 
@@ -37,12 +38,12 @@ TV_SHOW_TYPE = "http://dbpedia.org/ontology/TelevisionShow"
 PERSON_TYPE = "http://xmlns.com/foaf/0.1/Person"
 
 
-def get_allowed(path):
+def get_allowed(path: str) -> Set[str]:
     with open(path, "r") as in_file:
         return {line.strip() for line in in_file}
 
 
-def get_excluded(path):
+def get_excluded(path: str) -> Set[Tuple[str, str]]:
     with open(path, "r") as in_file:
         return {
             (line.strip().split("\t")[0], line.strip().split("\t")[1])
@@ -50,7 +51,9 @@ def get_excluded(path):
         }
 
 
-def _should_write(s, o, allowed, exclude):
+def _should_write(
+    s: str, o: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> bool:
     if (s.startswith("nm") or s.startswith("tt")) and (
         o.startswith("nm") or o.startswith("tt")
     ):
@@ -73,23 +76,31 @@ def _should_write(s, o, allowed, exclude):
     return False
 
 
-def _add_dtype(obj, dtype):
+def _add_dtype(obj: str, dtype: str = None) -> str:
     if dtype is None:
         return obj
     return '"' + obj + '"^^' + dtype
 
 
-def _sanity_check(input):
-    if input is None or input == "":
+def _sanity_check(value) -> bool:
+    if value is None or value == "":
         return False
     return True
 
 
-def _normalize_year(year):
+def _normalize_year(year: str) -> str:
     return year + "-01-01"
 
 
-def create_trips(s, p, o, multiple_possible, allowed, exclude, dtype=None):
+def create_trips(
+    s: str,
+    p: str,
+    o: str,
+    multiple_possible: bool,
+    allowed: Set[str],
+    exclude: Set[Tuple[str, str]],
+    dtype: str = None,
+) -> List[Tuple[str, str, str]]:
     if not (_sanity_check(s) and _sanity_check(p) and _sanity_check(o)):
         return []
     if p == "titleType":
@@ -122,18 +133,20 @@ def create_trips(s, p, o, multiple_possible, allowed, exclude, dtype=None):
                         s = BENCHMARK_RESOURCE_PREFIX + s
                     if obj.startswith("nm") or obj.startswith("tt"):
                         obj = BENCHMARK_RESOURCE_PREFIX + obj
-                    trips.append([s, p, _add_dtype(obj, dtype)])
+                    trips.append((s, p, _add_dtype(obj, dtype)))
         else:
             if _should_write(s, o, allowed, exclude):
                 if s.startswith("nm") or s.startswith("tt"):
                     s = BENCHMARK_RESOURCE_PREFIX + s
                 if o.startswith("nm") or o.startswith("tt"):
                     o = BENCHMARK_RESOURCE_PREFIX + o
-                trips.append([s, p, _add_dtype(o, dtype)])
+                trips.append((s, p, _add_dtype(o, dtype)))
     return trips
 
 
-def handle_name_basics(path, allowed, exclude):
+def handle_name_basics(
+    path: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips = []
     rel_trips = []
     with open(path, "r") as in_file:
@@ -143,52 +156,69 @@ def handle_name_basics(path, allowed, exclude):
                 if row[0] in allowed:
                     attr_trips.extend(
                         create_trips(
-                            row[0], "primaryName", row[1], False, allowed, exclude
+                            s=row[0],
+                            p="primaryName",
+                            o=row[1],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0],
-                            "birthYear",
-                            row[2],
-                            False,
-                            allowed,
-                            exclude,
-                            DTYPE_DATE,
+                            s=row[0],
+                            p="birthYear",
+                            o=row[2],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                            dtype=DTYPE_DATE,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0],
-                            "deathYear",
-                            row[3],
-                            False,
-                            allowed,
-                            exclude,
-                            DTYPE_DATE,
+                            s=row[0],
+                            p="deathYear",
+                            o=row[3],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                            dtype=DTYPE_DATE,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0], "primaryProfession", row[4], True, allowed, exclude
+                            s=row[0],
+                            p="primaryProfession",
+                            o=row[4],
+                            multiple_possible=True,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     rel_trips.extend(
                         create_trips(
-                            row[0], "knownForTitles", row[5], True, allowed, exclude
+                            s=row[0],
+                            p="knownForTitles",
+                            o=row[5],
+                            multiple_possible=True,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     rel_trips.append(
-                        [
+                        (
                             BENCHMARK_RESOURCE_PREFIX + row[0],
                             property_dict["type"],
                             PERSON_TYPE,
-                        ]
+                        )
                     )
     return attr_trips, rel_trips
 
 
-def handle_title_basics(path, allowed, exclude):
+def handle_title_basics(
+    path: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips = []
     rel_trips = []
     with open(path, "r") as in_file:
@@ -198,61 +228,92 @@ def handle_title_basics(path, allowed, exclude):
                 if row[0] in allowed:
                     rel_trips.extend(
                         create_trips(
-                            row[0], "titleType", row[1], False, allowed, exclude
+                            s=row[0],
+                            p="titleType",
+                            o=row[1],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0], "primaryTitle", row[2], False, allowed, exclude
+                            s=row[0],
+                            p="primaryTitle",
+                            o=row[2],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0], "originalTitle", row[3], False, allowed, exclude
-                        )
-                    )
-                    attr_trips.extend(
-                        create_trips(row[0], "isAdult", row[4], False, allowed, exclude)
-                    )
-                    attr_trips.extend(
-                        create_trips(
-                            row[0],
-                            "startYear",
-                            row[5],
-                            False,
-                            allowed,
-                            exclude,
-                            DTYPE_DATE,
+                            s=row[0],
+                            p="originalTitle",
+                            o=row[3],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0],
-                            "endYear",
-                            row[6],
-                            False,
-                            allowed,
-                            exclude,
-                            DTYPE_DATE,
+                            s=row[0],
+                            p="isAdult",
+                            o=row[4],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0],
-                            "runtimeMinutes",
-                            row[7],
-                            False,
-                            allowed,
-                            exclude,
+                            s=row[0],
+                            p="startYear",
+                            o=row[5],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                            dtype=DTYPE_DATE,
                         )
                     )
                     attr_trips.extend(
-                        create_trips(row[0], "genres", row[8], False, allowed, exclude)
+                        create_trips(
+                            s=row[0],
+                            p="endYear",
+                            o=row[6],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                            dtype=DTYPE_DATE,
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            s=row[0],
+                            p="runtimeMinutes",
+                            o=row[7],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                        )
+                    )
+                    attr_trips.extend(
+                        create_trips(
+                            s=row[0],
+                            p="genres",
+                            o=row[8],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                        )
                     )
     return attr_trips, rel_trips
 
 
-def handle_title_crew(path, allowed, exclude):
+def handle_title_crew(
+    path: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     rel_trips = []
     with open(path, "r") as in_file:
         for line in in_file:
@@ -261,18 +322,30 @@ def handle_title_crew(path, allowed, exclude):
                 if row[0] in allowed:
                     rel_trips.extend(
                         create_trips(
-                            row[0], "participatedIn", row[1], True, allowed, exclude
+                            s=row[0],
+                            p="participatedIn",
+                            o=row[1],
+                            multiple_possible=True,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     rel_trips.extend(
                         create_trips(
-                            row[0], "participatedIn", row[2], True, allowed, exclude
+                            s=row[0],
+                            p="participatedIn",
+                            o=row[2],
+                            multiple_possible=True,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
     return [], rel_trips
 
 
-def handle_title_episode(path, allowed, exclude):
+def handle_title_episode(
+    path: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips = []
     rel_trips = []
     with open(path, "r") as in_file:
@@ -282,39 +355,53 @@ def handle_title_episode(path, allowed, exclude):
                 if row[1] in allowed:
                     rel_trips.extend(
                         create_trips(
-                            row[0], "episodeOf", row[1], False, allowed, exclude
+                            s=row[0],
+                            p="episodeOf",
+                            o=row[1],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     rel_trips.extend(
                         create_trips(
-                            row[0], "titleType", "tvEpisode", False, allowed, exclude
+                            s=row[0],
+                            p="titleType",
+                            o="tvEpisode",
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0],
-                            "seasonNumber",
-                            row[2],
-                            False,
-                            allowed,
-                            DTYPE_NON_NEG_INT,
+                            s=row[0],
+                            p="seasonNumber",
+                            o=row[2],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                            dtype=DTYPE_NON_NEG_INT,
                         )
                     )
                     attr_trips.extend(
                         create_trips(
-                            row[0],
-                            "episodeNumber",
-                            row[3],
-                            False,
-                            allowed,
-                            DTYPE_NON_NEG_INT,
+                            s=row[0],
+                            p="episodeNumber",
+                            o=row[3],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
+                            dtype=DTYPE_NON_NEG_INT,
                         )
                     )
     return attr_trips, rel_trips
 
 
-def handle_title_principals(path, allowed, exclude):
-    attr_trips = []
+def handle_title_principals(
+    path: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
+    attr_trips: List[Tuple[str, str, str]] = []
     rel_trips = []
     with open(path, "r") as in_file:
         for line in in_file:
@@ -323,13 +410,18 @@ def handle_title_principals(path, allowed, exclude):
                 if row[0] in allowed:
                     rel_trips.extend(
                         create_trips(
-                            row[2], "participatedIn", row[0], False, allowed, exclude
+                            s=row[2],
+                            p="participatedIn",
+                            o=row[0],
+                            multiple_possible=False,
+                            allowed=allowed,
+                            exclude=exclude,
                         )
                     )
     return attr_trips, rel_trips
 
 
-def _dedup(trips):
+def _dedup(trips: List[Tuple[str, str, str]]) -> List[Tuple[str, str, str]]:
     d = []
     for t in trips:
         if t not in d:
@@ -337,7 +429,9 @@ def _dedup(trips):
     return d
 
 
-def parse_files(imdb_dir, allowed, exclude):
+def parse_files(
+    imdb_dir: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
+) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     file_handler_dict = {
         "name.basics.tsv": handle_name_basics,
         "title.basics.tsv": handle_title_basics,
@@ -377,7 +471,11 @@ def parse_files(imdb_dir, allowed, exclude):
     return _dedup(cleaned_attr), _dedup(rel_trips)
 
 
-def write_files(cleaned_attr, rel_trips, out_folder):
+def write_files(
+    cleaned_attr: List[Tuple[str, str, str]],
+    rel_trips: List[Tuple[str, str, str]],
+    out_folder: str,
+):
     if not os.path.exists(out_folder):
         os.makedirs(out_folder)
     with open(os.path.join(out_folder, "attr_triples_1"), "w") as out_writer_attr:
@@ -388,10 +486,11 @@ def write_files(cleaned_attr, rel_trips, out_folder):
             out_writer_rel.write("\t".join(t) + "\n")
 
 
-def create_graph_data():
-    file_path = os.path.abspath(__file__)
-    repo_path = os.path.split(os.path.split(file_path)[0])[0]
-    data_path = os.path.join(repo_path, "data")
+def create_graph_data(data_path: str = None, write: bool = True):
+    if data_path is None:
+        file_path = os.path.abspath(__file__)
+        repo_path = os.path.split(os.path.split(file_path)[0])[0]
+        data_path = os.path.join(repo_path, "data")
     imdb_path = os.path.join(data_path, "imdb")
     download_if_needed(imdb_path)
     allowed = get_allowed(os.path.join(data_path, "imdb", "allowed"))

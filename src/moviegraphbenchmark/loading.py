@@ -3,9 +3,10 @@ import os
 import zipfile
 from dataclasses import dataclass
 from typing import List
+import pystow
 
-from .create_graph import create_graph_data
-from .utils import download_file
+from moviegraphbenchmark.create_graph import _data_path
+from moviegraphbenchmark.utils import download_file
 
 logger = logging.getLogger(__name__)
 
@@ -13,10 +14,6 @@ try:
     import pandas as pd
 except ImportError:
     logger.error("Please install pandas for loading data: pip install pandas")
-
-
-PREPARED_DATA_URI = "https://cloud.scadsai.uni-leipzig.de/index.php/s/a6gW3AgQpJCELmc/download/ScadsMovieGraphBenchmark.zip"
-
 
 @dataclass
 class Fold:
@@ -35,18 +32,6 @@ class ERData:
     folds: List[Fold]
 
 
-def _download_and_create(data_path: str):
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
-    download_file(PREPARED_DATA_URI, data_path)
-    zip_path = os.path.join(data_path, "ScadsMovieGraphBenchmark.zip")
-    with zipfile.ZipFile(zip_path
-        , "r"
-    ) as zip_ref:
-        zip_ref.extractall(data_path)
-    create_graph_data(os.path.join(data_path, "data"))
-    os.remove(zip_path)
-
 
 def _read(path, names):
     return pd.read_csv(
@@ -59,10 +44,11 @@ def _read(path, names):
     )
 
 
-def load_data(pair: str, data_path: str) -> ERData:
-    pair_path = os.path.join(data_path, "data", pair)
-    if not os.path.exists(pair_path):
-        _download_and_create(data_path)
+def load_data(pair: str = "imdb-tmdb", data_path: str = None) -> ERData:
+    if data_path is None:
+        data_path = _data_path()
+        print(data_path)
+    pair_path = os.path.join(data_path, pair)
     triple_columns = ["head", "relation", "tail"]
     link_columns = ["left", "right"]
     attr_1 = _read(os.path.join(pair_path, "attr_triples_1"), triple_columns)

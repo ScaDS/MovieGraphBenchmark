@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ScaDSMovieGraphBenchmark"
+name = "MovieGraphBenchmark"
 version = "1.0.0"
 description = "Benchmark datasets for Entity Resolution on Knowledge Graphs containing information about movies, tv shows and persons from IMDB,TMDB and TheTVDB"
 authors = ["Daniel Obraczka <obraczka@informatik.uni-leipzig.de>"]
@@ -7,11 +7,12 @@ authors = ["Daniel Obraczka <obraczka@informatik.uni-leipzig.de>"]
 [tool.poetry.dependencies]
 python = ">=3.7.1,<3.11"
 requests = "*"
-tqdm = {version = "*", optional = true}
-pandas = {version = "*", optional = true}
+tqdm  = "*"
+pandas = "*"
+pystow = "*"
 
-[tool.poetry.extras]
-all = ["tqdm", "pandas"]
+[tool.poetry.scripts]
+moviegraphbenchmark = "moviegraphbenchmark.create_graph:main"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"

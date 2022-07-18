@@ -2,7 +2,7 @@ import gzip
 import os
 import shutil
 import sys
-from .utils import download_file
+from moviegraphbenchmark.utils import download_file
 
 import requests
 

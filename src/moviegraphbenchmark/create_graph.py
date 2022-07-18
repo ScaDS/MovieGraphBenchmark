@@ -514,7 +514,7 @@ def _data_path() -> str:
     if os.path.exists(data_path):
         return data_path
     else:
-        # else we use pystow and download
+        # else we use pystow
         try:
             import pystow
 
@@ -524,17 +524,18 @@ def _data_path() -> str:
     return data_path
 
 
-def _create_graph_data(data_path: str = None):
+def _create_graph_data(data_path: str = None) -> str:
     """ (Download and) create benchmark data on specified path.
 
     :param data_path: Path where data should be stored.
+    :return: data_path
     """
     if data_path is None:
         data_path = _data_path()
     # check if data was already created
     if os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_1")):
-        logger.info(f"Already created data in {data_path}")
-        return
+        logger.info(f"Data already present in {data_path}")
+        return data_path
     logger.info(f"Using data path: {data_path}")
     if not os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_2")):
         _download(data_path)
@@ -545,6 +546,7 @@ def _create_graph_data(data_path: str = None):
     cleaned_attr, rel_trips = parse_files(imdb_path, allowed, exclude)
     write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tmdb"))
     write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tvdb"))
+    return data_path
 
 @click.command
 @click.option("--data-path", default=None, help="Path where data is stored")

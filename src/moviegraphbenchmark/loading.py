@@ -8,7 +8,7 @@ import pystow
 from moviegraphbenchmark.create_graph import _data_path
 from moviegraphbenchmark.utils import download_file
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("moviegraphbenchmark")
 
 try:
     import pandas as pd

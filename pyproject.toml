@@ -12,7 +12,7 @@ pandas = "*"
 pystow = "*"
 
 [tool.poetry.scripts]
-moviegraphbenchmark = "moviegraphbenchmark.create_graph:main"
+moviegraphbenchmark = "moviegraphbenchmark.create_graph:create_graph_data"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"

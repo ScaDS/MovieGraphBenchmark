@@ -1,5 +1,6 @@
 import ast
 import logging
+import click
 import os
 import sys
 import zipfile
@@ -41,7 +42,7 @@ TV_EPISODE_TYPE = "http://dbpedia.org/ontology/TelevisionEpisode"
 TV_SHOW_TYPE = "http://dbpedia.org/ontology/TelevisionShow"
 PERSON_TYPE = "http://xmlns.com/foaf/0.1/Person"
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("moviegraphbenchmark")
 
 
 def get_allowed(path: str) -> Set[str]:
@@ -524,7 +525,11 @@ def _data_path() -> str:
     return data_path
 
 
-def create_graph_data(data_path: str = None):
+def _create_graph_data(data_path: str = None):
+    """ (Download and) create benchmark data on specified path.
+
+    :param data_path: Path where data should be stored.
+    """
     if data_path is None:
         data_path = _data_path()
     # check if data was already created
@@ -542,13 +547,15 @@ def create_graph_data(data_path: str = None):
     write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tmdb"))
     write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tvdb"))
 
+@click.command
+@click.option("--data-path", default=None, help="Path where data is stored")
+def create_graph_data(data_path: str = None):
+    """ (Download and) create benchmark data on specified path.
 
-def main():
-    if len(sys.argv) > 1:
-        create_graph_data(sys.argv[1])
-    else:
-        create_graph_data()
+    :param data_path: Path where data should be stored.
+    """
+    _create_graph_data(data_path)
 
 
 if __name__ == "__main__":
-    main()
+    create_graph_data()

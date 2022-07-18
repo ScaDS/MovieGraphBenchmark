@@ -16,7 +16,7 @@ uris = {
 }
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("moviegraphbenchmark")
 
 def unzip(filepath: str):
     with gzip.open(filepath + ".gz", "rb") as f_in:

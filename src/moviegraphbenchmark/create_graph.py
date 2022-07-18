@@ -1,10 +1,11 @@
 import ast
 import logging
-import click
 import os
 import sys
 import zipfile
 from typing import List, Set, Tuple
+
+import click
 
 from moviegraphbenchmark.get_imdb_data import download_if_needed
 from moviegraphbenchmark.utils import download_file
@@ -46,12 +47,12 @@ logger = logging.getLogger("moviegraphbenchmark")
 
 
 def get_allowed(path: str) -> Set[str]:
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         return {line.strip() for line in in_file}
 
 
 def get_excluded(path: str) -> Set[Tuple[str, str]]:
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         return {
             (line.strip().split("\t")[0], line.strip().split("\t")[1])
             for line in in_file
@@ -156,7 +157,7 @@ def handle_name_basics(
 ) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips = []
     rel_trips = []
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         for line in in_file:
             if not line.startswith("nconst\t"):
                 row = line.strip().split("\t")
@@ -228,7 +229,7 @@ def handle_title_basics(
 ) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips = []
     rel_trips = []
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         for line in in_file:
             if not line.startswith("tconst\t"):
                 row = line.strip().split("\t")
@@ -322,7 +323,7 @@ def handle_title_crew(
     path: str, allowed: Set[str], exclude: Set[Tuple[str, str]]
 ) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     rel_trips = []
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         for line in in_file:
             if not line.startswith("tconst\t"):
                 row = line.strip().split("\t")
@@ -355,7 +356,7 @@ def handle_title_episode(
 ) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips = []
     rel_trips = []
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         for line in in_file:
             if not line.startswith("tconst\t"):
                 row = line.strip().split("\t")
@@ -410,7 +411,7 @@ def handle_title_principals(
 ) -> Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]:
     attr_trips: List[Tuple[str, str, str]] = []
     rel_trips = []
-    with open(path, "r") as in_file:
+    with open(path, "r", encoding="utf8") as in_file:
         for line in in_file:
             if not line.startswith("tconst\t"):
                 row = line.strip().split("\t")
@@ -485,10 +486,14 @@ def write_files(
 ):
     if not os.path.exists(out_folder):
         os.makedirs(out_folder)
-    with open(os.path.join(out_folder, "attr_triples_1"), "w") as out_writer_attr:
+    with open(
+        os.path.join(out_folder, "attr_triples_1"), "w", encoding="utf8"
+    ) as out_writer_attr:
         for t in cleaned_attr:
             out_writer_attr.write("\t".join(t) + "\n")
-    with open(os.path.join(out_folder, "rel_triples_1"), "w") as out_writer_rel:
+    with open(
+        os.path.join(out_folder, "rel_triples_1"), "w", encoding="utf8"
+    ) as out_writer_rel:
         for t in rel_trips:
             out_writer_rel.write("\t".join(t) + "\n")
 
@@ -525,7 +530,7 @@ def _data_path() -> str:
 
 
 def _create_graph_data(data_path: str = None) -> str:
-    """ (Download and) create benchmark data on specified path.
+    """(Download and) create benchmark data on specified path.
 
     :param data_path: Path where data should be stored.
     :return: data_path
@@ -548,10 +553,11 @@ def _create_graph_data(data_path: str = None) -> str:
     write_files(cleaned_attr, rel_trips, os.path.join(data_path, "imdb-tvdb"))
     return data_path
 
+
 @click.command
 @click.option("--data-path", default=None, help="Path where data is stored")
 def create_graph_data(data_path: str = None):
-    """ (Download and) create benchmark data on specified path.
+    """(Download and) create benchmark data on specified path.
 
     :param data_path: Path where data should be stored.
     """

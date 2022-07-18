@@ -1,8 +1,9 @@
 import ast
+import logging
 import os
 from typing import List, Set, Tuple
 
-from get_imdb_data import download_if_needed
+from .get_imdb_data import download_if_needed
 
 DTYPE_DOUBLE = "<http://www.w3.org/2001/XMLSchema#double>"
 DTYPE_NON_NEG_INT = "<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"
@@ -36,6 +37,8 @@ FILM_TYPE = "http://dbpedia.org/ontology/Film"
 TV_EPISODE_TYPE = "http://dbpedia.org/ontology/TelevisionEpisode"
 TV_SHOW_TYPE = "http://dbpedia.org/ontology/TelevisionShow"
 PERSON_TYPE = "http://xmlns.com/foaf/0.1/Person"
+
+logger = logging.getLogger(__name__)
 
 
 def get_allowed(path: str) -> Set[str]:
@@ -115,7 +118,7 @@ def create_trips(
         try:
             p = property_dict[p]
         except KeyError:
-            print(s, p, o)
+            logger.debug((s, p, o))
             return []
 
     trips = []
@@ -486,10 +489,10 @@ def write_files(
             out_writer_rel.write("\t".join(t) + "\n")
 
 
-def create_graph_data(data_path: str = None, write: bool = True):
+def create_graph_data(data_path: str = None):
     if data_path is None:
         file_path = os.path.abspath(__file__)
-        repo_path = os.path.split(os.path.split(file_path)[0])[0]
+        repo_path = os.path.split(os.path.split(os.path.split(file_path)[0])[0])[0]
         data_path = os.path.join(repo_path, "data")
     imdb_path = os.path.join(data_path, "imdb")
     download_if_needed(imdb_path)

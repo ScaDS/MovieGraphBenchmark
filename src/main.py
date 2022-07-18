@@ -13,7 +13,7 @@ def main(folder_loc: str = "ScaDSMovieGraphBenchmark"):
     os.system("git clone https://github.com/ScaDS/MovieGraphBenchmark.git")
     os.chdir("MovieGraphBenchmark")
     print("Creating IMDB data")
-    os.system("python3 src/create_graph.py")
+    os.system("python3 src/moviegraphbenchmark/create_graph.py")
     print("Cleanup")
     os.chdir("..")
     shutil.move("MovieGraphBenchmark/data", target_loc)

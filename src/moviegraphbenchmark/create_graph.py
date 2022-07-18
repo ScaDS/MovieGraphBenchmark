@@ -503,7 +503,6 @@ def _download(data_path: str):
     zip_path = os.path.join(data_path, "ScadsMovieGraphBenchmark.zip")
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(data_path)
-    create_graph_data(data_path)
     os.remove(zip_path)
 
 

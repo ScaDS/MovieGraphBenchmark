@@ -1,4 +1,5 @@
 import gzip
+import logging
 import os
 import shutil
 import sys
@@ -15,6 +16,7 @@ uris = {
 }
 
 
+logger = logging.getLogger(__name__)
 
 def unzip(filepath: str):
     with gzip.open(filepath + ".gz", "rb") as f_in:
@@ -27,8 +29,8 @@ def download_if_needed(imdb_path: str):
     for u, p in uris.items():
         filepath = os.path.join(imdb_path, p)
         if not os.path.isfile(filepath):
-            print(f"Did not find {filepath}, therefore downloading")
+            logger.info(f"Did not find {filepath}, therefore downloading")
             download_file(u, imdb_path)
-            print("Unpacking gz archive")
+            logger.info("Unpacking gz archive")
             unzip(filepath)
             os.remove(filepath + ".gz")

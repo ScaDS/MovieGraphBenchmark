@@ -520,7 +520,7 @@ def _data_path() -> str:
 
             data_path = pystow.join("moviegraphbenchmark", "data")
         except ImportError:
-            print("Please install pystow: pip install pystow")
+            logger.error("Please install pystow: pip install pystow")
     return data_path
 
 
@@ -529,9 +529,9 @@ def create_graph_data(data_path: str = None):
         data_path = _data_path()
     # check if data was already created
     if os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_1")):
-        print(f"Already created data in {data_path}")
+        logger.info(f"Already created data in {data_path}")
         return
-    print(data_path)
+    logger.info(f"Using data path: {data_path}")
     if not os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_2")):
         _download(data_path)
     imdb_path = os.path.join(data_path, "imdb")

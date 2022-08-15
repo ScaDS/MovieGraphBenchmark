@@ -37,6 +37,12 @@ jobs:
       run: |
         echo "PYTHONPATH=src" >> $GITHUB_ENV
         echo "${{ env.PYTHONPATH }}"
+    - name: Cache dataset downloads
+      uses: actions/cache@v3
+      with:
+        # datasets are stored in `~/.data/moviegraphbenchmark/data`
+        path: ~/.data/moviegraphbenchmark/data
+        key: moviegraphbenchmark
     - name: Test
       run:
         nox

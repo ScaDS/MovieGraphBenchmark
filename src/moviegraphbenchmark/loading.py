@@ -45,8 +45,7 @@ def _read(path, names):
 
 
 def load_data(pair: str = "imdb-tmdb", data_path: str = None) -> ERData:
-    if data_path is None:
-        data_path = _create_graph_data(data_path)
+    data_path = _create_graph_data(data_path)
     logger.info(f"Loading from data path: {data_path}")
     pair_path = os.path.join(data_path, pair)
     triple_columns = ["head", "relation", "tail"]

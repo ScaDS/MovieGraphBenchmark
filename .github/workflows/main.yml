@@ -42,7 +42,7 @@ jobs:
       with:
         # datasets are stored in `~/.data/moviegraphbenchmark/data`
         path: ~/.data/moviegraphbenchmark/data
-        key: moviegraphbenchmark
+        key: ${{ runner.os }}-build-${{ matrix.python-version }}
     - name: Test
       run:
         nox

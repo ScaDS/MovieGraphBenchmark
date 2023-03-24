@@ -1,1 +1,0 @@
-- Fixed bug in loading, when custom data path is provided

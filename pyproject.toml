@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MovieGraphBenchmark"
-version = "1.0.1"
+version = "1.0.2"
 description = "Benchmark datasets for Entity Resolution on Knowledge Graphs containing information about movies, tv shows and persons from IMDB,TMDB and TheTVDB"
 authors = ["Daniel Obraczka <obraczka@informatik.uni-leipzig.de>"]
 readme = "README.md"

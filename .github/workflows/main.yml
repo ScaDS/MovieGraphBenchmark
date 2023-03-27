@@ -46,7 +46,7 @@ jobs:
       with:
         # datasets are stored in `~/.data/moviegraphbenchmark/data`
         path: ${{ env.DATA_PATH }}
-        key: ${{ runner.os }}-build-${{ matrix.python-version }}
+        key: alwaysthesame
         enableCrossOsArchive: True
     - name: Check file existence
       id: check_files

@@ -44,12 +44,6 @@ jobs:
     - name: Test
       run:
         nox
-    - uses: actions/cache/save@v3
-      id: cache
-      with:
-        path: data
-        key: alwaysthesame
-        enableCrossOsArchive: True
 
   other:
     needs: ubuntu

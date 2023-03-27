@@ -46,7 +46,7 @@ jobs:
         nox
 
   other:
-    needs: download
+    needs: ubuntu
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

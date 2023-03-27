@@ -28,12 +28,13 @@ jobs:
         python -m pip install nox
     - name: Set pystow dir
       run: |
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
-          echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
-        else
-          echo "PYSTOW_HOME=" >> $GITHUB_ENV
-          echo "PYSTOW_NAME=data" >> $GITHUB_ENV
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
+            echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
+          else
+            echo "PYSTOW_HOME=" >> $GITHUB_ENV
+            echo "PYSTOW_NAME=data" >> $GITHUB_ENV
+          fi
     - name: Cache dataset downloads
       uses: actions/cache@v3
       with:

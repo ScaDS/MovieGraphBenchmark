@@ -45,6 +45,13 @@ PERSON_TYPE = "http://xmlns.com/foaf/0.1/Person"
 
 logger = logging.getLogger("moviegraphbenchmark")
 
+try:
+    import pystow
+
+    DATA_PATH = pystow.join("moviegraphbenchmark", "data")
+except ImportError:
+    DATA_PATH = None
+
 
 def get_allowed(path: str) -> Set[str]:
     with open(path, "r", encoding="utf8") as in_file:
@@ -520,12 +527,10 @@ def _data_path() -> str:
         return data_path
     else:
         # else we use pystow
-        try:
-            import pystow
-
-            data_path = pystow.join("moviegraphbenchmark", "data")
-        except ImportError:
+        if DATA_PATH is None:
             logger.error("Please install pystow: pip install pystow")
+        else:
+            data_path = DATA_PATH
     return data_path
 
 

@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, '3.11']
+        python-version: [3.7]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
@@ -37,12 +37,24 @@ jobs:
       run: |
         echo "PYTHONPATH=src" >> $GITHUB_ENV
         echo "${{ env.PYTHONPATH }}"
+    - name: Set pystow dir
+      run: |
+        echo "DATA_PATH=$(python -c 'import moviegraphbenchmark; print(moviegraphbenchmark.create_graph.DATA_PATH)')" >> $GITHUB_ENV
     - name: Cache dataset downloads
       uses: actions/cache@v3
       with:
         # datasets are stored in `~/.data/moviegraphbenchmark/data`
-        path: ~/.data/moviegraphbenchmark/data
+        path: ${{ env.DATA_PATH }}
         key: ${{ runner.os }}-build-${{ matrix.python-version }}
+        enableCrossOsArchive: True
+    - name: Check file existence
+      id: check_files
+      uses: andstor/file-existence-action@v1
+      with:
+        files: "${{ env.DATA_PATH }}"
+    - name: File exists
+      if: steps.check_files.outputs.files_exists == 'true'
+      run: echo "It exists !"
     - name: Test
       run:
         nox

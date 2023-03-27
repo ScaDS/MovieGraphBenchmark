@@ -35,11 +35,17 @@ jobs:
             echo "PYSTOW_HOME=" >> $GITHUB_ENV
             echo "PYSTOW_NAME=data" >> $GITHUB_ENV
           fi
+    - uses: actions/cache@v3
+      id: cache
+      with:
+        path: data
+        key: alwaysthesame
+        enableCrossOsArchive: True
     - name: Test
       run:
         nox
-    - name: Cache dataset downloads
-      uses: actions/cache@v3
+    - uses: actions/cache/save@v3
+      id: cache
       with:
         path: data
         key: alwaysthesame
@@ -73,6 +79,12 @@ jobs:
           echo "PYSTOW_HOME=" >> $GITHUB_ENV
           echo "PYSTOW_NAME=data" >> $GITHUB_ENV
         fi
+    - uses: actions/cache/restore@v3
+      id: cache
+      with:
+        path: data
+        key: alwaysthesame
+        enableCrossOsArchive: True
     - name: Test
       run:
         nox

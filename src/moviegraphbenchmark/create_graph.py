@@ -1,7 +1,6 @@
 import ast
 import logging
 import os
-import sys
 import zipfile
 from typing import List, Set, Tuple
 
@@ -44,13 +43,6 @@ TV_SHOW_TYPE = "http://dbpedia.org/ontology/TelevisionShow"
 PERSON_TYPE = "http://xmlns.com/foaf/0.1/Person"
 
 logger = logging.getLogger("moviegraphbenchmark")
-
-try:
-    import pystow
-
-    DATA_PATH = pystow.join("moviegraphbenchmark", "data")
-except ImportError:
-    DATA_PATH = None
 
 
 def get_allowed(path: str) -> Set[str]:
@@ -527,10 +519,12 @@ def _data_path() -> str:
         return data_path
     else:
         # else we use pystow
-        if DATA_PATH is None:
+        try:
+            import pystow
+
+            data_path = pystow.join("moviegraphbenchmark", "data")
+        except ImportError:
             logger.error("Please install pystow: pip install pystow")
-        else:
-            data_path = DATA_PATH
     return data_path
 
 

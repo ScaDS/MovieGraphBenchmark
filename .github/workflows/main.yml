@@ -14,7 +14,7 @@ on:
 
 
 jobs:
-  download:
+  ubuntu:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -45,7 +45,7 @@ jobs:
       run:
         nox
 
-  build:
+  other:
     needs: download
     runs-on: ${{ matrix.os }}
     strategy:
@@ -72,6 +72,7 @@ jobs:
         else
           echo "PYSTOW_HOME=" >> $GITHUB_ENV
           echo "PYSTOW_NAME=data" >> $GITHUB_ENV
+        fi
     - name: Cache dataset downloads
       uses: actions/cache@v3
       with:

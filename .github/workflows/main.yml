@@ -59,11 +59,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install nox
-    - name: Set pystow dir
+    - name: Set pystow dir windows
       if: runner.os == "Windows"
       run: |
             echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
             echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
+    - name: Set pystow dir mac
       if: runner.os == "macOS"
       run: |
             echo "PYSTOW_HOME=" >> $GITHUB_ENV

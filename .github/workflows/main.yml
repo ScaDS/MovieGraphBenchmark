@@ -28,13 +28,8 @@ jobs:
         python -m pip install nox
     - name: Set pystow dir
       run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
-            echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
-          else
             echo "PYSTOW_HOME=" >> $GITHUB_ENV
             echo "PYSTOW_NAME=data" >> $GITHUB_ENV
-          fi
     - uses: actions/cache@v3
       id: cache
       with:
@@ -65,14 +60,14 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install nox
     - name: Set pystow dir
+      if: runner.os == "Windows"
       run: |
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
-          echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
-        else
-          echo "PYSTOW_HOME=" >> $GITHUB_ENV
-          echo "PYSTOW_NAME=data" >> $GITHUB_ENV
-        fi
+            echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
+            echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
+      if: runner.os == "macOS"
+      run: |
+            echo "PYSTOW_HOME=" >> $GITHUB_ENV
+            echo "PYSTOW_NAME=data" >> $GITHUB_ENV
     - uses: actions/cache/restore@v3
       id: cache
       with:

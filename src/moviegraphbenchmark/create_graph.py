@@ -1,7 +1,6 @@
 import ast
 import logging
 import os
-import sys
 import zipfile
 from typing import List, Set, Tuple
 

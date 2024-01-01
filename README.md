@@ -34,7 +34,7 @@ print(ds.attr_triples_2)
 print(ds.rel_triples_1)
 print(ds.rel_triples_2)
 print(ds.ent_links)
-for fold in in ds.folds:
+for fold in ds.folds:
     print(fold)
 ```
 

@@ -2,7 +2,7 @@ import ast
 import logging
 import os
 import zipfile
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Optional
 
 import click
 
@@ -83,7 +83,7 @@ def _should_write(
     return False
 
 
-def _add_dtype(obj: str, dtype: str = None) -> str:
+def _add_dtype(obj: str, dtype: Optional[str] = None) -> str:
     if dtype is None:
         return obj
     return '"' + obj + '"^^' + dtype
@@ -106,7 +106,7 @@ def create_trips(
     multiple_possible: bool,
     allowed: Set[str],
     exclude: Set[Tuple[str, str]],
-    dtype: str = None,
+    dtype: Optional[str] = None,
 ) -> List[Tuple[str, str, str]]:
     if not (_sanity_check(s) and _sanity_check(p) and _sanity_check(o)):
         return []
@@ -501,10 +501,10 @@ def _download(data_path: str):
     if not os.path.exists(data_path):
         os.makedirs(data_path)
     download_file(
-        "https://cloud.scadsai.uni-leipzig.de/index.php/s/SdzWXCarFCFGeN9/download/ScadsMovieGraphBenchmark.zip",
+        "https://cloud.scadsai.uni-leipzig.de/index.php/s/rRsfmBJcKX348n6/download/ScadsMovieGraphBenchmark1_2.zip",
         data_path,
     )
-    zip_path = os.path.join(data_path, "ScadsMovieGraphBenchmark.zip")
+    zip_path = os.path.join(data_path, "ScadsMovieGraphBenchmark1_2.zip")
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(data_path)
     os.remove(zip_path)
@@ -528,7 +528,7 @@ def _data_path() -> str:
     return data_path
 
 
-def _create_graph_data(data_path: str = None) -> str:
+def _create_graph_data(data_path: Optional[str] = None) -> str:
     """(Download and) create benchmark data on specified path.
 
     :param data_path: Path where data should be stored.
@@ -538,10 +538,13 @@ def _create_graph_data(data_path: str = None) -> str:
         data_path = _data_path()
     # check if data was already created
     if os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_1")):
-        logger.info(f"Data already present in {data_path}")
-        return data_path
+        if not os.path.exists(os.path.join(data_path, "imdb_intra_ent_links")):
+            logger.info(f"Old data already present in {data_path}, will update...")
+        else:
+            logger.info(f"Data already present in {data_path}")
+            return data_path
     logger.info(f"Using data path: {data_path}")
-    if not os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_2")):
+    if not os.path.exists(os.path.join(data_path, "imdb_intra_ent_links")):
         _download(data_path)
     imdb_path = os.path.join(data_path, "imdb")
     download_if_needed(imdb_path)
@@ -555,7 +558,7 @@ def _create_graph_data(data_path: str = None) -> str:
 
 @click.command
 @click.option("--data-path", default=None, help="Path where data is stored")
-def create_graph_data(data_path: str = None):
+def create_graph_data(data_path: Optional[str] = None):
     """(Download and) create benchmark data on specified path.
 
     :param data_path: Path where data should be stored.

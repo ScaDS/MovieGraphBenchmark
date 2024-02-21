@@ -2,6 +2,7 @@ import os
 import requests
 import sys
 
+
 def download_file(url: str, dl_path: str, chunk_size: int = 1024):
     filename = os.path.basename(url)
     header = requests.head(url)

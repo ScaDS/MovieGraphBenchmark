@@ -16,3 +16,5 @@ def test_load(pair):
         assert not fold.train_links.empty
         assert not fold.valid_links.empty
     assert not ds.ent_links.empty
+    assert not ds.intra_ent_links[0].empty
+    assert not ds.intra_ent_links[1].empty

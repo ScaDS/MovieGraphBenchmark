@@ -8,7 +8,7 @@ repository = "https://github.com/ScaDS/MovieGraphBenchmark"
 
 
 [tool.poetry.dependencies]
-python = ">=3.7.1"
+python = ">=3.8"
 requests = "*"
 tqdm  = "*"
 pandas = "*"
@@ -17,10 +17,16 @@ pystow = "*"
 [tool.poetry.scripts]
 moviegraphbenchmark = "moviegraphbenchmark.create_graph:create_graph_data"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.9"
-pytest = "^7.1.2"
+pytest = "^8.0.0"
+pytest-mock = "^3.12.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: mark test as slow"
+]

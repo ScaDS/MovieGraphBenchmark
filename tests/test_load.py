@@ -78,8 +78,8 @@ def mock_read_row_tuples(path: str, exclusion: str, allowed: Set[str]):
 
 
 @pytest.mark.slow
-def test_create_graph_existing_download(tmpdir, monkeypatch):
-    data_path = _create_data_path()
+def test_create_graph_existing_download(monkeypatch):
+    data_path, _ = _create_data_path()
     imdb_path = os.path.join(data_path, "imdb")
     allowed = get_allowed(os.path.join(data_path, "imdb", "allowed"))
     exclude = get_excluded(os.path.join(data_path, "imdb", "exclude"))
@@ -122,13 +122,15 @@ def copy_existing_data(data_path):
     _copy_old_new(orig_imdb_path, new_imdb_path, "allowed")
     _copy_old_new(orig_imdb_path, new_imdb_path, "exclude")
 
-    for task_folder in ["imdb-tmdb","imdb-tvdb","tmdb-tvdb"]:
+    for task_folder in ["imdb-tmdb", "imdb-tvdb", "tmdb-tvdb"]:
         orig_task_path, new_task_path = _create_old_new_data_path(
             orig_data, data_path, task_folder
         )
         for fold_folder in range(1, 6):
-            old_fold, new_fold =_create_old_new_data_path(
-                orig_task_path, new_task_path, os.path.join("721_5fold",str(fold_folder))
+            old_fold, new_fold = _create_old_new_data_path(
+                orig_task_path,
+                new_task_path,
+                os.path.join("721_5fold", str(fold_folder)),
             )
             for links in ["test_links", "train_links", "valid_links"]:
                 _copy_old_new(old_fold, new_fold, links)

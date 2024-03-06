@@ -333,7 +333,6 @@ def parse_files(
     file_handler_dict = {
         "name.basics.tsv": handle_name_basics,
         "title.basics.tsv": handle_title_basics,
-        # "title.crew.tsv": handle_title_crew,
         "title.episode.tsv": handle_title_episode,
         "title.principals.tsv": handle_title_principals,
     }
@@ -388,7 +387,7 @@ def write_files(
             out_writer_rel.write("\t".join(t) + "\n")
 
 
-def _download(data_path: str):
+def _download_data(data_path: str):
     if not os.path.exists(data_path):
         os.makedirs(data_path)
     download_file(
@@ -401,13 +400,13 @@ def _download(data_path: str):
     os.remove(zip_path)
 
 
-def _data_path() -> str:
+def _create_data_path() -> Tuple[str, bool]:
     file_path = os.path.abspath(__file__)
     repo_path = os.path.split(os.path.split(os.path.split(file_path)[0])[0])[0]
     data_path = os.path.join(repo_path, "data")
     # if repo was cloned this exists
     if os.path.exists(data_path):
-        return data_path
+        return data_path, True
     else:
         # else we use pystow
         try:
@@ -416,7 +415,7 @@ def _data_path() -> str:
             data_path = pystow.join("moviegraphbenchmark", "data")
         except ImportError:
             logger.error("Please install pystow: pip install pystow")
-    return data_path
+    return data_path, False
 
 
 def _create_graph_data(data_path: Optional[str] = None) -> str:
@@ -425,16 +424,17 @@ def _create_graph_data(data_path: Optional[str] = None) -> str:
     :param data_path: Path where data should be stored.
     :return: data_path
     """
+    existing_data_path = False
     if data_path is None:
-        data_path = _data_path()
+        data_path, existing_data_path = _create_data_path()
     print(data_path)
     # check if data was already created
     if os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_1")):
         logger.info(f"Data already present in {data_path}")
         return data_path
     logger.info(f"Using data path: {data_path}")
-    if not os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_2")):
-        _download(data_path)
+    if not existing_data_path or not os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_2")):
+        _download_data(data_path)
     imdb_path = os.path.join(data_path, "imdb")
     download_if_needed(imdb_path)
     allowed = get_allowed(os.path.join(data_path, "imdb", "allowed"))

@@ -14,65 +14,23 @@ on:
 
 
 jobs:
-  ubuntu:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install nox
-    - name: Set pystow dir
-      run: |
-            echo "PYSTOW_HOME=" >> $GITHUB_ENV
-            echo "PYSTOW_NAME=data" >> $GITHUB_ENV
-    - uses: actions/cache@v3
-      id: cache
-      with:
-        path: data
-        key: alwaysthesame
-        enableCrossOsArchive: True
-    - name: Test
-      run: nox -s tests -- -m "not slow"
-
-  other:
+  tests:
     needs: ubuntu
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7]
-        os: [macos-latest, windows-latest]
-
+        python-version: [3.8]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: [3.8]
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install nox
-    - name: Set pystow dir windows
-      if: runner.os == 'Windows'
-      run: |
-            echo "PYSTOW_HOME=" >> $env:GITHUB_ENV
-            echo "PYSTOW_NAME=data" >> $env:GITHUB_ENV
-    - name: Set pystow dir mac
-      if: runner.os == 'macOS'
-      run: |
-            echo "PYSTOW_HOME=" >> $GITHUB_ENV
-            echo "PYSTOW_NAME=data" >> $GITHUB_ENV
-    - uses: actions/cache/restore@v3
-      id: cache
-      with:
-        path: data
-        key: alwaysthesame
-        enableCrossOsArchive: True
     - name: Test
       run: nox -s tests -- -m "not slow"

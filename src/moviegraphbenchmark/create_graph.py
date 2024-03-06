@@ -391,7 +391,7 @@ def _download_data(data_path: str):
     if not os.path.exists(data_path):
         os.makedirs(data_path)
     download_file(
-        "https://cloud.scadsai.uni-leipzig.de/index.php/s/SdzWXCarFCFGeN9/download/ScadsMovieGraphBenchmark.zip",
+        "https://cloud.scadsai.uni-leipzig.de/index.php/s/4WwwG7yHWPAiNnc/download/ScadsMovieGraphBenchmark.zip",
         data_path,
     )
     zip_path = os.path.join(data_path, "ScadsMovieGraphBenchmark.zip")

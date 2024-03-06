@@ -2,10 +2,8 @@ import gzip
 import logging
 import os
 import shutil
-import sys
 from moviegraphbenchmark.utils import download_file
 
-import requests
 
 uris = {
     "https://web.archive.org/web/20200717014821/https://datasets.imdbws.com/name.basics.tsv.gz": "name.basics.tsv",
@@ -17,6 +15,7 @@ uris = {
 
 
 logger = logging.getLogger("moviegraphbenchmark")
+
 
 def unzip(filepath: str):
     with gzip.open(filepath + ".gz", "rb") as f_in:

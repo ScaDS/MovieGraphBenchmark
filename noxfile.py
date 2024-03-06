@@ -2,10 +2,11 @@ import nox
 
 @nox.session
 def tests(session):
-    session.install("pytest")
+    args = session.posargs or []
     session.install(".")
-    session.install("requests")
+    session.install("pytest")
     session.install("tqdm")
     session.install("pandas")
     session.install("pystow")
-    session.run("pytest")
+    session.run("pytest", *args)
+

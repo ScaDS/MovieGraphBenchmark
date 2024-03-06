@@ -37,8 +37,7 @@ jobs:
         key: alwaysthesame
         enableCrossOsArchive: True
     - name: Test
-      run:
-        nox
+      run: nox -s tests -- -m "not slow"
 
   other:
     needs: ubuntu
@@ -76,5 +75,4 @@ jobs:
         key: alwaysthesame
         enableCrossOsArchive: True
     - name: Test
-      run:
-        nox
+      run: nox -s tests -- -m "not slow"

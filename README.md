@@ -54,7 +54,8 @@ There are 3 entity resolution tasks in this repository: imdb-tmdb, imdb-tvdb, tm
 The data structure mainly follows the structure used in [OpenEA](https://github.com/nju-websoft/OpenEA).
 Each folder contains the information of the knowledge graphs (`attr_triples_*`,`rel_triples_*`) and the gold standard of entity links between the datasets(`ent_links`). The triples are labeled with `1` and `2` where e.g. for imdb-tmdb `1` refers to imdb and `2` to tmdb. The folder 721_5fold contains pre-split entity link folds with 70-20-10 ratio for testing, training, validation.
 Furthermore, there exists a file for each dataset with intra-dataset links called `*_intra_ent_links`.
-For the multi-source setting, you can use the `multi_source_cluster` file. Each line here is a cluster, with the first entry denoting the cluster id, and the remaining being the comma-seperated members of the cluster.
+For the binary cases each dataset has a `cluster` file in the respective folder. Each line here is a cluster with comma-seperated members of the cluster. This includes intra- and inter-dataset links.
+For the multi-source setting, you can use the `multi_source_cluster` file in the `data` folder.
 
 # Citing
 This dataset was first presented in this paper:

@@ -1,13 +1,13 @@
 import ast
 import logging
 import os
-import zipfile
 from typing import List, Set, Tuple, Optional
 
 import click
 
 from moviegraphbenchmark.get_imdb_data import download_if_needed
-from moviegraphbenchmark.utils import download_file
+from moviegraphbenchmark.utils import download_github_folder
+import moviegraphbenchmark
 
 DTYPE_DOUBLE = "<http://www.w3.org/2001/XMLSchema#double>"
 DTYPE_NON_NEG_INT = "<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>"
@@ -497,19 +497,6 @@ def write_files(
             out_writer_rel.write("\t".join(t) + "\n")
 
 
-def _download(data_path: str):
-    if not os.path.exists(data_path):
-        os.makedirs(data_path)
-    download_file(
-        "https://cloud.scadsai.uni-leipzig.de/index.php/s/rRsfmBJcKX348n6/download/ScadsMovieGraphBenchmark1_2.zip",
-        data_path,
-    )
-    zip_path = os.path.join(data_path, "ScadsMovieGraphBenchmark1_2.zip")
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(data_path)
-    os.remove(zip_path)
-
-
 def _data_path() -> str:
     file_path = os.path.abspath(__file__)
     repo_path = os.path.split(os.path.split(os.path.split(file_path)[0])[0])[0]
@@ -545,7 +532,7 @@ def _create_graph_data(data_path: Optional[str] = None) -> str:
             return data_path
     logger.info(f"Using data path: {data_path}")
     if not os.path.exists(os.path.join(data_path, "imdb_intra_ent_links")):
-        _download(data_path)
+        download_github_folder(data_path, moviegraphbenchmark.__version__)
     imdb_path = os.path.join(data_path, "imdb")
     download_if_needed(imdb_path)
     allowed = get_allowed(os.path.join(data_path, "imdb", "allowed"))

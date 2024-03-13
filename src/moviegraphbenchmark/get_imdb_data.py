@@ -27,7 +27,7 @@ def download_if_needed(imdb_path: str):
     for u, p in uris.items():
         filepath = os.path.join(imdb_path, p)
         if not os.path.isfile(filepath):
-            logger.info(f"Did not find {filepath}, therefore downloading")
+            logger.info(f"Did not find {filepath}, therefore downloading from {u}")
             download_file(u, imdb_path)
             logger.info("Unpacking gz archive")
             unzip(filepath)

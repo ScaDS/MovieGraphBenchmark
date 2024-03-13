@@ -414,7 +414,6 @@ def _create_graph_data(data_path: Optional[str] = None) -> str:
     existing_data_path = False
     if data_path is None:
         data_path, existing_data_path = _create_data_path()
-    print(data_path)
     # check if data was already created
     if os.path.exists(os.path.join(data_path, "imdb-tmdb", "rel_triples_1")):
         if not os.path.exists(os.path.join(data_path, "imdb_intra_ent_links")):

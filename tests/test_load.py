@@ -1,4 +1,5 @@
 import pytest
+import shutil
 from shutil import copyfile
 import pathlib
 import random
@@ -107,15 +108,61 @@ def test_load(pair):
     assert not ds.intra_ent_links[0].empty
     assert not ds.intra_ent_links[1].empty
 
+def _create_old_new_data_path(old_data_path, new_data_path, name):
+    return os.path.join(old_data_path, name), os.path.join(new_data_path, name)
+
+def _copy_old_new(old_path, new_path, file_name):
+    if not os.path.exists(new_path):
+        os.makedirs(new_path)
+    copyfile(os.path.join(old_path, file_name), os.path.join(new_path, file_name))
+
+def copy_existing_imdb(data_path):
+    orig_data = pathlib.Path(__file__).parent.parent.joinpath("data").absolute()
+    orig_imdb_path, new_imdb_path = _create_old_new_data_path(
+        orig_data, data_path, "imdb"
+    )
+    _copy_old_new(orig_imdb_path, new_imdb_path, "name.basics.tsv")
+    _copy_old_new(orig_imdb_path, new_imdb_path, "title.basics.tsv")
+    _copy_old_new(orig_imdb_path, new_imdb_path, "title.episode.tsv")
+    _copy_old_new(orig_imdb_path, new_imdb_path, "title.principals.tsv")
+
+def _remove_file_or_dir(path: str):
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+    else:
+        os.remove(path)
+
+@pytest.fixture
+def cleanup_downloaded():
+    # just do teardown
+    tmp_path = os.path.join("/tmp","data")
+    yield tmp_path
+    for file_or_dir in os.listdir(tmp_path):
+        if file_or_dir == "imdb":
+            continue
+        _remove_file_or_dir(os.path.join(tmp_path, file_or_dir))
+
+@pytest.mark.slow
+def test_create_graph_existing_imdb(cleanup_downloaded):
+    # moving is costly and I want to shorten the time between tests
+    # so i use this and not pytests tmp path
+    tmp_path = cleanup_downloaded
+    copy_existing_imdb(tmp_path)
+    ds = load_data(data_path=tmp_path)
+    assert not ds.attr_triples_1.empty
+    assert not ds.attr_triples_2.empty
+    assert not ds.rel_triples_1.empty
+    assert not ds.rel_triples_2.empty
+    for fold in ds.folds:
+        assert not fold.test_links.empty
+        assert not fold.train_links.empty
+        assert not fold.valid_links.empty
+    assert not ds.ent_links.empty
+    assert not ds.intra_ent_links[0].empty
+    assert not ds.intra_ent_links[1].empty
+
 
 def copy_existing_data(data_path):
-    def _create_old_new_data_path(old_data_path, new_data_path, name):
-        return os.path.join(old_data_path, name), os.path.join(new_data_path, name)
-
-    def _copy_old_new(old_path, new_path, file_name):
-        if not os.path.exists(new_path):
-            os.makedirs(new_path)
-        copyfile(os.path.join(old_path, file_name), os.path.join(new_path, file_name))
 
     orig_data = pathlib.Path(__file__).parent.parent.joinpath("data").absolute()
 

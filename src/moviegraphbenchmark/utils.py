@@ -34,20 +34,25 @@ def download_file(url: str, dl_path: str, chunk_size: int = 1024):
                 f.write(chunk)
     return output_path
 
-def _remove_file_or_dir(path: str):
-    if os.path.isdir(path):
-        shutil.rmtree(path)
+
+def move_recursively_overwrite(src, dst):
+    """Circumvent shutil failing to overwrite dirs by overwriting contents."""
+    # dir exists try to move all inner files and overwrite
+    if os.path.exists(dst) and os.path.isdir(src):
+        for inner in os.listdir(src):
+            move_recursively_overwrite(
+                os.path.join(src, inner), os.path.join(dst, inner)
+            )
     else:
-        os.remove(path)
+        shutil.move(src, dst)
+
 
 def download_github_folder(
     dl_path: str,
     version: str,
     base_url: str = "https://github.com/ScaDS/MovieGraphBenchmark/archive/refs/tags/",
 ):
-    # url = f"{base_url}v{version}.zip"
-    url = "https://cloud.scadsai.uni-leipzig.de/index.php/s/4WwwG7yHWPAiNnc/download/ScadsMovieGraphBenchmark1_2.zip"
-    print("=== USING TEMPORARY URL ===")
+    url = f"{base_url}v{version}.zip"
     if not os.path.exists(dl_path):
         os.makedirs(dl_path)
     output_path = download_file(url=url, dl_path=dl_path)
@@ -55,12 +60,13 @@ def download_github_folder(
         zip_ref.extractall(dl_path)
     os.remove(output_path)
 
-    # remove everything except data folder
-    zip_folder = os.path.join(dl_path,os.listdir(dl_path)[0])
-    for rootfile in glob(os.path.join(zip_folder, ".*")):
-        _remove_file_or_dir(rootfile)
-    for rootfile in glob(os.path.join(zip_folder, "*")):
-        if not rootfile.endswith("data"):
-            _remove_file_or_dir(rootfile)
-    shutil.move(os.path.join(zip_folder, "data"), os.path.join(dl_path, "data"))
+    # move everything inside data folder
+    zip_folder = list(glob(os.path.join(dl_path, "MovieGraphBenchmark-*")))[0]
+    new_data_path = os.path.join(zip_folder, "data")
+    for file_or_dir in os.listdir(new_data_path):
+        move_recursively_overwrite(
+            os.path.join(new_data_path, file_or_dir), os.path.join(dl_path, file_or_dir)
+        )
+
+    # remove everything else
     shutil.rmtree(zip_folder)

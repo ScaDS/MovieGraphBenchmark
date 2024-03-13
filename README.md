@@ -1,6 +1,6 @@
 # !! Update 2024-02-24 (fixed in 1.1.0) !!
 We found that `ent_links` in some cases contained intra-dataset links, which is not immediately noticable by the user.
-Another round of clerical review was performed, transitive links, which were previously missed are added and the `ent_links` files now only contain entity links _between_ the datasets. The `721_5fold` directories have been adapted accordingly.
+Another round of clerical review was performed, (transitive) links, which were previously missed are added and the `ent_links` files now only contain entity links _between_ the datasets. The `721_5fold` directories have been adapted accordingly.
 The intra-dataset links are now in `{dataset_name}_intra_ent_links` for each of the three datasets.
 What might also not be immediately obvious is that this dataset can be used as multi-source entity resolution task.
 We therefore provide a `multi_source_cluster` file with each line consisting of a cluster id and comma-seperated cluster members of the three datasets, which can also include multiple entries for a single dataset.
@@ -60,7 +60,7 @@ For the binary cases each dataset has a `cluster` file in the respective folder.
 For the multi-source setting, you can use the `multi_source_cluster` file in the `data` folder.
 Using [`sylloge`](https://github.com/dobraczka/sylloge) you can also easily load this dataset as a multi-source task:
 
-```
+```python
 from sylloge import MovieGraphBenchmark
 ds = MovieGraphBenchmark(graph_pair='multi')
 ```

@@ -49,6 +49,8 @@ print(ds.intra_ent_links[0])
 print(ds.intra_ent_links[1])
 ```
 
+Alternatively this dataset (among others) is also available in [`sylloge`](https://github.com/dobraczka/sylloge).
+
 # Dataset structure
 There are 3 entity resolution tasks in this repository: imdb-tmdb, imdb-tvdb, tmdb-tvdb, all contained in the `data` folder. 
 The data structure mainly follows the structure used in [OpenEA](https://github.com/nju-websoft/OpenEA).
@@ -56,6 +58,12 @@ Each folder contains the information of the knowledge graphs (`attr_triples_*`,`
 Furthermore, there exists a file for each dataset with intra-dataset links called `*_intra_ent_links`.
 For the binary cases each dataset has a `cluster` file in the respective folder. Each line here is a cluster with comma-seperated members of the cluster. This includes intra- and inter-dataset links.
 For the multi-source setting, you can use the `multi_source_cluster` file in the `data` folder.
+Using [`sylloge`](https://github.com/dobraczka/sylloge) you can also easily load this dataset as a multi-source task:
+
+```
+from sylloge import MovieGraphBenchmark
+ds = MovieGraphBenchmark(graph_pair='multi')
+```
 
 # Citing
 This dataset was first presented in this paper:

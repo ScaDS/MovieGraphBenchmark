@@ -118,6 +118,12 @@ def copy_existing_data(data_path):
         copyfile(os.path.join(old_path, file_name), os.path.join(new_path, file_name))
 
     orig_data = pathlib.Path(__file__).parent.parent.joinpath("data").absolute()
+
+    _copy_old_new(orig_data, data_path, "multi_source_cluster")
+    _copy_old_new(orig_data, data_path, "imdb_intra_ent_links")
+    _copy_old_new(orig_data, data_path, "tmdb_intra_ent_links")
+    _copy_old_new(orig_data, data_path, "tvdb_intra_ent_links")
+
     orig_imdb_path, new_imdb_path = _create_old_new_data_path(
         orig_data, data_path, "imdb"
     )
@@ -143,6 +149,7 @@ def copy_existing_data(data_path):
         _copy_old_new(orig_task_path, new_task_path, "attr_triples_2")
         _copy_old_new(orig_task_path, new_task_path, "rel_triples_2")
         _copy_old_new(orig_task_path, new_task_path, "ent_links")
+        _copy_old_new(orig_task_path, new_task_path, "cluster")
 
 
 @pytest.mark.parametrize("pair", [None, "imdb-tmdb", "imdb-tvdb", "tmdb-tvdb"])
